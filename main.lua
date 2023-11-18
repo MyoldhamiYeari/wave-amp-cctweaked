@@ -743,6 +743,58 @@ local function drawMonitorDynamic(monitor)
 	if not monitor then return end
 	term.redirect(monitor)
 	local screenWidth, screenHeight = term.getSize()
+	term.setCursorPos(1, 1)
+	term.setBackgroundColor(theme.topBar)
+	term.setTextColor(theme.topBarTitle)
+	term.write("wave-amp")
+	term.write((" "):rep(screenWidth - 25))
+	term.setTextColor(trackMode == 1 and theme.topBarOptionSelected or theme.topBarOption)
+	term.write("nrm ")
+	term.setTextColor(trackMode == 2 and theme.topBarOptionSelected or theme.topBarOption)
+	term.write("stp ")
+	term.setTextColor(trackMode == 3 and theme.topBarOptionSelected or theme.topBarOption)
+	term.write("rep ")
+	term.setTextColor(trackMode == 4 and theme.topBarOptionSelected or theme.topBarOption)
+	term.write("shf ")
+	term.setTextColor(theme.topBarClose)
+	term.write("X")
+
+	local scrollnub = math.floor(trackScroll / (#tracks - screenHeight + 7) * (screenHeight - 10) + 0.5) 
+
+	term.setTextColor(theme.song)
+	term.setBackgroundColor(theme.songBackground)
+	for i = 1, screenHeight - 7 do
+		local index = i + trackScroll
+		term.setCursorPos(1, i + 1)
+		term.setTextColor(index == currentTrack and theme.songSelected or theme.song)
+		term.setBackgroundColor(index == currentTrack and theme.songSelectedBackground or theme.songBackground)
+		local str = ""
+		if tracks[index] then
+			local track = tracks[index]
+			str = formatTime(track.length / track.tempo).." "
+			if #track.name > 0 then
+				str = str..(#track.originalAuthor == 0 and track.author or track.originalAuthor).." - "..track.name
+			else
+				local name = fs.getName(files[index])
+				str = str..name:sub(1, #name - 4)
+			end
+		end
+		if #str > screenWidth - 1 then
+			str = str:sub(1, screenWidth - 3)..".."
+		end
+		term.write(str)
+		term.write((" "):rep(screenWidth - 1 - #str))
+		term.setBackgroundColor((i >= scrollnub + 1 and i <= scrollnub + 3) and theme.scrollBar or theme.scrollBackground)
+		if i == 1 then
+			term.setTextColor(theme.scrollButton)
+			term.write(_HOST and "\30" or "^")
+		elseif i == screenHeight - 7 then
+			term.setTextColor(theme.scrollButton)
+			term.write(_HOST and "\31" or "v")
+		else
+			term.write(" ")
+		end
+	end
 	for i = 1, 5 do
 		vsEasings[i] = vsEasings[i] - vsDecline
 		if vsEasings[i] < 0 then
