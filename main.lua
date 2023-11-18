@@ -31,10 +31,7 @@ wave._newSoundMap = {"harp", "bass", "basedrum", "snare", "hat"}
 wave._defaultThrottle = 99
 wave._defaultClipMode = 1
 wave._maxInterval = 1
-wave._isNewSystem = false
-if _HOST then
-	wave._isNewSystem = _HOST:sub(15, #_HOST) >= "1.80"
-end
+wave._isNewSystem = true
 
 wave.context = { }
 wave.output = { }
