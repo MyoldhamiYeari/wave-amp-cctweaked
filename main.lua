@@ -737,6 +737,36 @@ local function drawStatic()
 	end
 end
 
+local function drawMonitorDynamic(monitor)
+	local oldterm = term.current()
+	if noUI then return end
+	if not monitor then return end
+	term.redirect(monitor)
+	local screenWidth, screenHeight = term.getSize()
+	for i = 1, 5 do
+		vsEasings[i] = vsEasings[i] - vsDecline
+		if vsEasings[i] < 0 then
+			vsEasings[i] = 0
+		end
+		local part = context.vs[i] > vsStep and vsStep or context.vs[i]
+		if vsEasings[i] < part then
+			vsEasings[i] = part
+		end
+		local full = math.floor(part / vsStep * screenWidth + 0.5)
+		local easing = math.floor(vsEasings[i] / vsStep * screenWidth + 0.5)
+		term.setCursorPos(1, screenHeight - 6 + i)
+		term.setBackgroundColor(theme.visualiserBar)
+		term.setTextColor(theme.visualiserBackground)
+		term.write((" "):rep(full))
+		term.write((_HOST and "\127" or "#"):rep(math.floor((easing - full) / 2)))
+		term.setBackgroundColor(theme.visualiserBackground)
+		term.setTextColor(theme.visualiserBar)
+		term.write((_HOST and "\127" or "#"):rep(math.ceil((easing - full) / 2)))
+		term.write((" "):rep(screenWidth - easing))
+	end
+	term.redirect(oldterm)
+end
+
 local function drawDynamic()
 	if noUI then return end
 	for i = 1, 5 do
@@ -906,6 +936,11 @@ local function run()
 				nextSong()
 			end
 			drawDynamic()
+			local monitor = peripheral.find("monitor")
+
+			if monitor then
+			  drawMonitorDynamic(monitor)
+			end
 		elseif e[1] == "terminate" then
 			running = false
 		elseif e[1] == "term_resize" then
